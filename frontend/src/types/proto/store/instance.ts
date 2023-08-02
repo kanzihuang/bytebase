@@ -1,5 +1,5 @@
 /* eslint-disable */
-import * as _m0 from "protobufjs/minimal";
+import _m0 from "protobufjs/minimal";
 
 export const protobufPackage = "bytebase.store";
 
@@ -53,7 +53,9 @@ export const InstanceOptions = {
 
   toJSON(message: InstanceOptions): unknown {
     const obj: any = {};
-    message.schemaTenantMode !== undefined && (obj.schemaTenantMode = message.schemaTenantMode);
+    if (message.schemaTenantMode === true) {
+      obj.schemaTenantMode = message.schemaTenantMode;
+    }
     return obj;
   },
 

@@ -149,10 +149,11 @@ import {
   useAuthStore,
   useIdentityProviderStore,
 } from "@/store";
-import { IdentityProvider } from "@/types/proto/v1/idp_service";
+import { IdentityProvider, IdentityProviderType } from "@/types/proto/v1/idp_service";
 import AuthFooter from "./AuthFooter.vue";
 
 interface LocalState {
+  idpName: string;
   email: string;
   password: string;
   showPassword: boolean;
@@ -165,6 +166,7 @@ const authStore = useAuthStore();
 const identityProviderStore = useIdentityProviderStore();
 
 const state = reactive<LocalState>({
+  idpName: "",
   email: "",
   password: "",
   showPassword: false,
@@ -207,6 +209,7 @@ const allowSignin = computed(() => {
 
 const trySignin = async () => {
   const mfaTempToken = await authStore.login({
+    idpName: state.idpName,
     email: state.email,
     password: state.password,
     web: true,
@@ -227,10 +230,15 @@ const trySignin = async () => {
 const trySigninWithIdentityProvider = async (
   identityProvider: IdentityProvider
 ) => {
-  await openWindowForSSO(
-    identityProvider,
-    false /* !popup */,
-    route.query.redirect as string
-  );
+  if (identityProvider.type === IdentityProviderType.LDAP) {
+    state.idpName = identityProvider.name;
+    trySignin();
+  } else {
+    await openWindowForSSO(
+      identityProvider,
+      false /* !popup */,
+      route.query.redirect as string
+    );
+  }
 };
 </script>

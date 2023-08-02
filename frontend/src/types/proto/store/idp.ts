@@ -1,5 +1,6 @@
 /* eslint-disable */
-import * as _m0 from "protobufjs/minimal";
+import Long from "long";
+import _m0 from "protobufjs/minimal";
 
 export const protobufPackage = "bytebase.store";
 
@@ -7,6 +8,7 @@ export enum IdentityProviderType {
   IDENTITY_PROVIDER_TYPE_UNSPECIFIED = 0,
   OAUTH2 = 1,
   OIDC = 2,
+  LDAP = 3,
   UNRECOGNIZED = -1,
 }
 
@@ -21,6 +23,9 @@ export function identityProviderTypeFromJSON(object: any): IdentityProviderType 
     case 2:
     case "OIDC":
       return IdentityProviderType.OIDC;
+    case 3:
+    case "LDAP":
+      return IdentityProviderType.LDAP;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -36,7 +41,54 @@ export function identityProviderTypeToJSON(object: IdentityProviderType): string
       return "OAUTH2";
     case IdentityProviderType.OIDC:
       return "OIDC";
+    case IdentityProviderType.LDAP:
+      return "LDAP";
     case IdentityProviderType.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+/**
+ * SecurityProtocol represents the security protocol to be used when connecting
+ * to the LDAP server.
+ */
+export enum SecurityProtocol {
+  Unspecified = 0,
+  /** StartTLS - SecurityProtocolStartTLS represents the StartTLS security protocol. */
+  StartTLS = 1,
+  /** LDAPS - SecurityProtocolLDAPS represents the LDAPS security protocol. */
+  LDAPS = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function securityProtocolFromJSON(object: any): SecurityProtocol {
+  switch (object) {
+    case 0:
+    case "Unspecified":
+      return SecurityProtocol.Unspecified;
+    case 1:
+    case "StartTLS":
+      return SecurityProtocol.StartTLS;
+    case 2:
+    case "LDAPS":
+      return SecurityProtocol.LDAPS;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return SecurityProtocol.UNRECOGNIZED;
+  }
+}
+
+export function securityProtocolToJSON(object: SecurityProtocol): string {
+  switch (object) {
+    case SecurityProtocol.Unspecified:
+      return "Unspecified";
+    case SecurityProtocol.StartTLS:
+      return "StartTLS";
+    case SecurityProtocol.LDAPS:
+      return "LDAPS";
+    case SecurityProtocol.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
   }
@@ -45,6 +97,7 @@ export function identityProviderTypeToJSON(object: IdentityProviderType): string
 export interface IdentityProviderConfig {
   oauth2Config?: OAuth2IdentityProviderConfig | undefined;
   oidcConfig?: OIDCIdentityProviderConfig | undefined;
+  ldapConfig?: LDAPIdentityProviderConfig | undefined;
 }
 
 /** OAuth2IdentityProviderConfig is the structure for OAuth2 identity provider config. */
@@ -64,6 +117,19 @@ export interface OIDCIdentityProviderConfig {
   issuer: string;
   clientId: string;
   clientSecret: string;
+  fieldMapping?: FieldMapping | undefined;
+  skipTlsVerify: boolean;
+}
+
+/** LDAPIdentityProviderConfig is the structure for LDAP identity provider config. */
+export interface LDAPIdentityProviderConfig {
+  host: string;
+  port: number;
+  bindDn: string;
+  bindPassword: string;
+  baseDn: string;
+  userFilter: string;
+  securityProtocol: SecurityProtocol;
   fieldMapping?: FieldMapping | undefined;
   skipTlsVerify: boolean;
 }
@@ -97,7 +163,7 @@ export interface IdentityProviderUserInfo {
 }
 
 function createBaseIdentityProviderConfig(): IdentityProviderConfig {
-  return { oauth2Config: undefined, oidcConfig: undefined };
+  return { oauth2Config: undefined, oidcConfig: undefined, ldapConfig: undefined };
 }
 
 export const IdentityProviderConfig = {
@@ -107,6 +173,9 @@ export const IdentityProviderConfig = {
     }
     if (message.oidcConfig !== undefined) {
       OIDCIdentityProviderConfig.encode(message.oidcConfig, writer.uint32(18).fork()).ldelim();
+    }
+    if (message.ldapConfig !== undefined) {
+      LDAPIdentityProviderConfig.encode(message.ldapConfig, writer.uint32(26).fork()).ldelim();
     }
     return writer;
   },
@@ -132,6 +201,13 @@ export const IdentityProviderConfig = {
 
           message.oidcConfig = OIDCIdentityProviderConfig.decode(reader, reader.uint32());
           continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.ldapConfig = LDAPIdentityProviderConfig.decode(reader, reader.uint32());
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -145,15 +221,21 @@ export const IdentityProviderConfig = {
     return {
       oauth2Config: isSet(object.oauth2Config) ? OAuth2IdentityProviderConfig.fromJSON(object.oauth2Config) : undefined,
       oidcConfig: isSet(object.oidcConfig) ? OIDCIdentityProviderConfig.fromJSON(object.oidcConfig) : undefined,
+      ldapConfig: isSet(object.ldapConfig) ? LDAPIdentityProviderConfig.fromJSON(object.ldapConfig) : undefined,
     };
   },
 
   toJSON(message: IdentityProviderConfig): unknown {
     const obj: any = {};
-    message.oauth2Config !== undefined &&
-      (obj.oauth2Config = message.oauth2Config ? OAuth2IdentityProviderConfig.toJSON(message.oauth2Config) : undefined);
-    message.oidcConfig !== undefined &&
-      (obj.oidcConfig = message.oidcConfig ? OIDCIdentityProviderConfig.toJSON(message.oidcConfig) : undefined);
+    if (message.oauth2Config !== undefined) {
+      obj.oauth2Config = OAuth2IdentityProviderConfig.toJSON(message.oauth2Config);
+    }
+    if (message.oidcConfig !== undefined) {
+      obj.oidcConfig = OIDCIdentityProviderConfig.toJSON(message.oidcConfig);
+    }
+    if (message.ldapConfig !== undefined) {
+      obj.ldapConfig = LDAPIdentityProviderConfig.toJSON(message.ldapConfig);
+    }
     return obj;
   },
 
@@ -168,6 +250,9 @@ export const IdentityProviderConfig = {
       : undefined;
     message.oidcConfig = (object.oidcConfig !== undefined && object.oidcConfig !== null)
       ? OIDCIdentityProviderConfig.fromPartial(object.oidcConfig)
+      : undefined;
+    message.ldapConfig = (object.ldapConfig !== undefined && object.ldapConfig !== null)
+      ? LDAPIdentityProviderConfig.fromPartial(object.ldapConfig)
       : undefined;
     return message;
   },
@@ -302,19 +387,30 @@ export const OAuth2IdentityProviderConfig = {
 
   toJSON(message: OAuth2IdentityProviderConfig): unknown {
     const obj: any = {};
-    message.authUrl !== undefined && (obj.authUrl = message.authUrl);
-    message.tokenUrl !== undefined && (obj.tokenUrl = message.tokenUrl);
-    message.userInfoUrl !== undefined && (obj.userInfoUrl = message.userInfoUrl);
-    message.clientId !== undefined && (obj.clientId = message.clientId);
-    message.clientSecret !== undefined && (obj.clientSecret = message.clientSecret);
-    if (message.scopes) {
-      obj.scopes = message.scopes.map((e) => e);
-    } else {
-      obj.scopes = [];
+    if (message.authUrl !== "") {
+      obj.authUrl = message.authUrl;
     }
-    message.fieldMapping !== undefined &&
-      (obj.fieldMapping = message.fieldMapping ? FieldMapping.toJSON(message.fieldMapping) : undefined);
-    message.skipTlsVerify !== undefined && (obj.skipTlsVerify = message.skipTlsVerify);
+    if (message.tokenUrl !== "") {
+      obj.tokenUrl = message.tokenUrl;
+    }
+    if (message.userInfoUrl !== "") {
+      obj.userInfoUrl = message.userInfoUrl;
+    }
+    if (message.clientId !== "") {
+      obj.clientId = message.clientId;
+    }
+    if (message.clientSecret !== "") {
+      obj.clientSecret = message.clientSecret;
+    }
+    if (message.scopes?.length) {
+      obj.scopes = message.scopes;
+    }
+    if (message.fieldMapping !== undefined) {
+      obj.fieldMapping = FieldMapping.toJSON(message.fieldMapping);
+    }
+    if (message.skipTlsVerify === true) {
+      obj.skipTlsVerify = message.skipTlsVerify;
+    }
     return obj;
   },
 
@@ -425,12 +521,21 @@ export const OIDCIdentityProviderConfig = {
 
   toJSON(message: OIDCIdentityProviderConfig): unknown {
     const obj: any = {};
-    message.issuer !== undefined && (obj.issuer = message.issuer);
-    message.clientId !== undefined && (obj.clientId = message.clientId);
-    message.clientSecret !== undefined && (obj.clientSecret = message.clientSecret);
-    message.fieldMapping !== undefined &&
-      (obj.fieldMapping = message.fieldMapping ? FieldMapping.toJSON(message.fieldMapping) : undefined);
-    message.skipTlsVerify !== undefined && (obj.skipTlsVerify = message.skipTlsVerify);
+    if (message.issuer !== "") {
+      obj.issuer = message.issuer;
+    }
+    if (message.clientId !== "") {
+      obj.clientId = message.clientId;
+    }
+    if (message.clientSecret !== "") {
+      obj.clientSecret = message.clientSecret;
+    }
+    if (message.fieldMapping !== undefined) {
+      obj.fieldMapping = FieldMapping.toJSON(message.fieldMapping);
+    }
+    if (message.skipTlsVerify === true) {
+      obj.skipTlsVerify = message.skipTlsVerify;
+    }
     return obj;
   },
 
@@ -443,6 +548,198 @@ export const OIDCIdentityProviderConfig = {
     message.issuer = object.issuer ?? "";
     message.clientId = object.clientId ?? "";
     message.clientSecret = object.clientSecret ?? "";
+    message.fieldMapping = (object.fieldMapping !== undefined && object.fieldMapping !== null)
+      ? FieldMapping.fromPartial(object.fieldMapping)
+      : undefined;
+    message.skipTlsVerify = object.skipTlsVerify ?? false;
+    return message;
+  },
+};
+
+function createBaseLDAPIdentityProviderConfig(): LDAPIdentityProviderConfig {
+  return {
+    host: "",
+    port: 0,
+    bindDn: "",
+    bindPassword: "",
+    baseDn: "",
+    userFilter: "",
+    securityProtocol: 0,
+    fieldMapping: undefined,
+    skipTlsVerify: false,
+  };
+}
+
+export const LDAPIdentityProviderConfig = {
+  encode(message: LDAPIdentityProviderConfig, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.host !== "") {
+      writer.uint32(10).string(message.host);
+    }
+    if (message.port !== 0) {
+      writer.uint32(16).int64(message.port);
+    }
+    if (message.bindDn !== "") {
+      writer.uint32(26).string(message.bindDn);
+    }
+    if (message.bindPassword !== "") {
+      writer.uint32(34).string(message.bindPassword);
+    }
+    if (message.baseDn !== "") {
+      writer.uint32(42).string(message.baseDn);
+    }
+    if (message.userFilter !== "") {
+      writer.uint32(50).string(message.userFilter);
+    }
+    if (message.securityProtocol !== 0) {
+      writer.uint32(56).int32(message.securityProtocol);
+    }
+    if (message.fieldMapping !== undefined) {
+      FieldMapping.encode(message.fieldMapping, writer.uint32(66).fork()).ldelim();
+    }
+    if (message.skipTlsVerify === true) {
+      writer.uint32(72).bool(message.skipTlsVerify);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): LDAPIdentityProviderConfig {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLDAPIdentityProviderConfig();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.host = reader.string();
+          continue;
+        case 2:
+          if (tag !== 16) {
+            break;
+          }
+
+          message.port = longToNumber(reader.int64() as Long);
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.bindDn = reader.string();
+          continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          message.bindPassword = reader.string();
+          continue;
+        case 5:
+          if (tag !== 42) {
+            break;
+          }
+
+          message.baseDn = reader.string();
+          continue;
+        case 6:
+          if (tag !== 50) {
+            break;
+          }
+
+          message.userFilter = reader.string();
+          continue;
+        case 7:
+          if (tag !== 56) {
+            break;
+          }
+
+          message.securityProtocol = reader.int32() as any;
+          continue;
+        case 8:
+          if (tag !== 66) {
+            break;
+          }
+
+          message.fieldMapping = FieldMapping.decode(reader, reader.uint32());
+          continue;
+        case 9:
+          if (tag !== 72) {
+            break;
+          }
+
+          message.skipTlsVerify = reader.bool();
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): LDAPIdentityProviderConfig {
+    return {
+      host: isSet(object.host) ? String(object.host) : "",
+      port: isSet(object.port) ? Number(object.port) : 0,
+      bindDn: isSet(object.bindDn) ? String(object.bindDn) : "",
+      bindPassword: isSet(object.bindPassword) ? String(object.bindPassword) : "",
+      baseDn: isSet(object.baseDn) ? String(object.baseDn) : "",
+      userFilter: isSet(object.userFilter) ? String(object.userFilter) : "",
+      securityProtocol: isSet(object.securityProtocol) ? securityProtocolFromJSON(object.securityProtocol) : 0,
+      fieldMapping: isSet(object.fieldMapping) ? FieldMapping.fromJSON(object.fieldMapping) : undefined,
+      skipTlsVerify: isSet(object.skipTlsVerify) ? Boolean(object.skipTlsVerify) : false,
+    };
+  },
+
+  toJSON(message: LDAPIdentityProviderConfig): unknown {
+    const obj: any = {};
+    if (message.host !== "") {
+      obj.host = message.host;
+    }
+    if (message.port !== 0) {
+      obj.port = Math.round(message.port);
+    }
+    if (message.bindDn !== "") {
+      obj.bindDn = message.bindDn;
+    }
+    if (message.bindPassword !== "") {
+      obj.bindPassword = message.bindPassword;
+    }
+    if (message.baseDn !== "") {
+      obj.baseDn = message.baseDn;
+    }
+    if (message.userFilter !== "") {
+      obj.userFilter = message.userFilter;
+    }
+    if (message.securityProtocol !== 0) {
+      obj.securityProtocol = securityProtocolToJSON(message.securityProtocol);
+    }
+    if (message.fieldMapping !== undefined) {
+      obj.fieldMapping = FieldMapping.toJSON(message.fieldMapping);
+    }
+    if (message.skipTlsVerify === true) {
+      obj.skipTlsVerify = message.skipTlsVerify;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<LDAPIdentityProviderConfig>): LDAPIdentityProviderConfig {
+    return LDAPIdentityProviderConfig.fromPartial(base ?? {});
+  },
+
+  fromPartial(object: DeepPartial<LDAPIdentityProviderConfig>): LDAPIdentityProviderConfig {
+    const message = createBaseLDAPIdentityProviderConfig();
+    message.host = object.host ?? "";
+    message.port = object.port ?? 0;
+    message.bindDn = object.bindDn ?? "";
+    message.bindPassword = object.bindPassword ?? "";
+    message.baseDn = object.baseDn ?? "";
+    message.userFilter = object.userFilter ?? "";
+    message.securityProtocol = object.securityProtocol ?? 0;
     message.fieldMapping = (object.fieldMapping !== undefined && object.fieldMapping !== null)
       ? FieldMapping.fromPartial(object.fieldMapping)
       : undefined;
@@ -516,9 +813,15 @@ export const FieldMapping = {
 
   toJSON(message: FieldMapping): unknown {
     const obj: any = {};
-    message.identifier !== undefined && (obj.identifier = message.identifier);
-    message.displayName !== undefined && (obj.displayName = message.displayName);
-    message.email !== undefined && (obj.email = message.email);
+    if (message.identifier !== "") {
+      obj.identifier = message.identifier;
+    }
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
+    if (message.email !== "") {
+      obj.email = message.email;
+    }
     return obj;
   },
 
@@ -600,9 +903,15 @@ export const IdentityProviderUserInfo = {
 
   toJSON(message: IdentityProviderUserInfo): unknown {
     const obj: any = {};
-    message.identifier !== undefined && (obj.identifier = message.identifier);
-    message.displayName !== undefined && (obj.displayName = message.displayName);
-    message.email !== undefined && (obj.email = message.email);
+    if (message.identifier !== "") {
+      obj.identifier = message.identifier;
+    }
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
+    if (message.email !== "") {
+      obj.email = message.email;
+    }
     return obj;
   },
 
@@ -619,12 +928,43 @@ export const IdentityProviderUserInfo = {
   },
 };
 
+declare const self: any | undefined;
+declare const window: any | undefined;
+declare const global: any | undefined;
+const tsProtoGlobalThis: any = (() => {
+  if (typeof globalThis !== "undefined") {
+    return globalThis;
+  }
+  if (typeof self !== "undefined") {
+    return self;
+  }
+  if (typeof window !== "undefined") {
+    return window;
+  }
+  if (typeof global !== "undefined") {
+    return global;
+  }
+  throw "Unable to locate global object";
+})();
+
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
   : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
+
+function longToNumber(long: Long): number {
+  if (long.gt(Number.MAX_SAFE_INTEGER)) {
+    throw new tsProtoGlobalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
+  }
+  return long.toNumber();
+}
+
+if (_m0.util.Long !== Long) {
+  _m0.util.Long = Long as any;
+  _m0.configure();
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

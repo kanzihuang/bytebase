@@ -45,6 +45,7 @@ func (s *Server) registerIssueRoutes(g *echo.Group) {
 
 		issue, err := s.createIssue(ctx, issueCreate, c.Get(getPrincipalIDContextKey()).(int))
 		if err != nil {
+			log.Warn(fmt.Sprintf("Failed to create issue: %+v", issueCreate), zap.Error(err))
 			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to create issue").SetInternal(err)
 		}
 

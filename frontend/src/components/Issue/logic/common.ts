@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import { cloneDeep, isNaN, isNumber } from "lodash-es";
+import { cloneDeep, isNaN, isNumber, isUndefined } from "lodash-es";
 import { useRoute } from "vue-router";
 import { v4 as uuidv4 } from "uuid";
 import { t } from "@/plugins/i18n";
@@ -422,7 +422,12 @@ export const isTaskEditable = (task: Task): boolean => {
 
 export const isGroupingChangeIssue = (issue: Issue): boolean => {
   const route = useRoute();
-  if (route.query.databaseGroupName && route.query.databaseGroupName !== "") {
+  if (
+    !isUndefined(route) &&
+    !isUndefined(route.query) &&
+    !isUndefined(route.query.databaseGroupName) &&
+    route.query.databaseGroupName !== ""
+  ) {
     return true;
   }
   const groupName = (issue.payload as IssuePayload).grouping?.databaseGroupName;

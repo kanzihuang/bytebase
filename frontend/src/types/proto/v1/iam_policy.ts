@@ -1,5 +1,5 @@
 /* eslint-disable */
-import * as _m0 from "protobufjs/minimal";
+import _m0 from "protobufjs/minimal";
 import { ParsedExpr } from "../google/api/expr/v1alpha1/syntax";
 import { Expr } from "../google/type/expr";
 
@@ -74,10 +74,8 @@ export const IamPolicy = {
 
   toJSON(message: IamPolicy): unknown {
     const obj: any = {};
-    if (message.bindings) {
-      obj.bindings = message.bindings.map((e) => e ? Binding.toJSON(e) : undefined);
-    } else {
-      obj.bindings = [];
+    if (message.bindings?.length) {
+      obj.bindings = message.bindings.map((e) => Binding.toJSON(e));
     }
     return obj;
   },
@@ -169,15 +167,18 @@ export const Binding = {
 
   toJSON(message: Binding): unknown {
     const obj: any = {};
-    message.role !== undefined && (obj.role = message.role);
-    if (message.members) {
-      obj.members = message.members.map((e) => e);
-    } else {
-      obj.members = [];
+    if (message.role !== "") {
+      obj.role = message.role;
     }
-    message.condition !== undefined && (obj.condition = message.condition ? Expr.toJSON(message.condition) : undefined);
-    message.parsedExpr !== undefined &&
-      (obj.parsedExpr = message.parsedExpr ? ParsedExpr.toJSON(message.parsedExpr) : undefined);
+    if (message.members?.length) {
+      obj.members = message.members;
+    }
+    if (message.condition !== undefined) {
+      obj.condition = Expr.toJSON(message.condition);
+    }
+    if (message.parsedExpr !== undefined) {
+      obj.parsedExpr = ParsedExpr.toJSON(message.parsedExpr);
+    }
     return obj;
   },
 

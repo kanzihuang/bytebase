@@ -69,6 +69,12 @@ export async function openWindowForSSO(
       scope: oidcConfig.scopes.join(" "),
       redirect_uri: `${window.location.origin}/oidc/callback`,
     });
+  } else if (identityProvider.type === IdentityProviderType.LDAP) {
+    const ldap2Config = identityProvider.config?.ldapConfig;
+    if (!ldap2Config) {
+      return null;
+    }
+    return uri.query;
   } else {
     throw new Error(
       `identity provider type ${identityProvider.type.toString()} is not supported`

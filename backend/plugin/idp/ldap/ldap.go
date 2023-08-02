@@ -14,7 +14,7 @@ import (
 
 // IdentityProvider represents an LDAP Identity Provider.
 type IdentityProvider struct {
-	config IdentityProviderConfig
+	config *storepb.LDAPIdentityProviderConfig
 }
 
 // SecurityProtocol represents the security protocol to be used when connecting
@@ -28,31 +28,17 @@ const (
 	SecurityProtocolLDAPS SecurityProtocol = "ldaps"
 )
 
-// IdentityProviderConfig is the configuration to be consumed by the LDAP
-// Identity Provider.
-type IdentityProviderConfig struct {
-	Host             string                `json:"host"`
-	Port             int                   `json:"port"`
-	SkipTLSVerify    bool                  `json:"skipTlsVerify"`
-	BindDN           string                `json:"bindDn"`
-	BindPassword     string                `json:"bindPassword"`
-	BaseDN           string                `json:"baseDn"`
-	UserFilter       string                `json:"userFilter"`
-	SecurityProtocol SecurityProtocol      `json:"securityProtocol"`
-	FieldMapping     *storepb.FieldMapping `json:"fieldMapping"`
-}
-
 // NewIdentityProvider initializes a new LDAP Identity Provider with the given
 // configuration.
-func NewIdentityProvider(config IdentityProviderConfig) (*IdentityProvider, error) {
-	if config.SecurityProtocol != SecurityProtocolStartTLS && config.SecurityProtocol != SecurityProtocolLDAPS {
+func NewIdentityProvider(config *storepb.LDAPIdentityProviderConfig) (*IdentityProvider, error) {
+	if config.SecurityProtocol != storepb.SecurityProtocol_SecurityProtocol_Unspecified && config.SecurityProtocol != storepb.SecurityProtocol_StartTLS && config.SecurityProtocol != storepb.SecurityProtocol_LDAPS {
 		return nil, errors.Errorf("the field %q must be either %q or %q", "securityProtocol", SecurityProtocolStartTLS, SecurityProtocolLDAPS)
 	}
 	for v, field := range map[string]string{
 		config.Host:                    "host",
-		config.BindDN:                  "bindDn",
+		config.BindDn:                  "bindDn",
 		config.BindPassword:            "bindPassword",
-		config.BaseDN:                  "baseDn",
+		config.BaseDn:                  "baseDn",
 		config.UserFilter:              "userFilter",
 		config.FieldMapping.Identifier: "fieldMapping.identifier",
 	} {
@@ -62,7 +48,7 @@ func NewIdentityProvider(config IdentityProviderConfig) (*IdentityProvider, erro
 	}
 
 	if config.Port <= 0 {
-		if config.SecurityProtocol == SecurityProtocolLDAPS {
+		if config.SecurityProtocol == storepb.SecurityProtocol_LDAPS {
 			config.Port = 636
 		} else {
 			config.Port = 389
@@ -78,9 +64,9 @@ func (p *IdentityProvider) dial() (*ldap.Conn, error) {
 	addr := fmt.Sprintf("%s:%d", p.config.Host, p.config.Port)
 	tlsConfig := &tls.Config{
 		ServerName:         p.config.Host,
-		InsecureSkipVerify: p.config.SkipTLSVerify,
+		InsecureSkipVerify: p.config.SkipTlsVerify,
 	}
-	if p.config.SecurityProtocol == SecurityProtocolLDAPS {
+	if p.config.SecurityProtocol == storepb.SecurityProtocol_LDAPS {
 		conn, err := ldap.DialTLS("tcp", addr, tlsConfig)
 		if err != nil {
 			return nil, errors.Errorf("dial TLS: %v", err)
@@ -92,7 +78,7 @@ func (p *IdentityProvider) dial() (*ldap.Conn, error) {
 	if err != nil {
 		return nil, errors.Errorf("dial: %v", err)
 	}
-	if p.config.SecurityProtocol == SecurityProtocolStartTLS {
+	if p.config.SecurityProtocol == storepb.SecurityProtocol_StartTLS {
 		if err = conn.StartTLS(tlsConfig); err != nil {
 			_ = conn.Close()
 			return nil, errors.Errorf("start TLS: %v", err)
@@ -110,14 +96,14 @@ func (p *IdentityProvider) Authenticate(username, password string) (*storepb.Ide
 	defer func() { _ = conn.Close() }()
 
 	// Bind with a system account
-	err = conn.Bind(p.config.BindDN, p.config.BindPassword)
+	err = conn.Bind(p.config.BindDn, p.config.BindPassword)
 	if err != nil {
 		return nil, errors.Errorf("bind: %v", err)
 	}
 
 	sr, err := conn.Search(
 		ldap.NewSearchRequest(
-			p.config.BaseDN,
+			p.config.BaseDn,
 			ldap.ScopeWholeSubtree,
 			ldap.NeverDerefAliases,
 			0,
@@ -138,7 +124,7 @@ func (p *IdentityProvider) Authenticate(username, password string) (*storepb.Ide
 	// Bind as the user to verify their password
 	err = conn.Bind(entry.DN, password)
 	if err != nil {
-		return nil, errors.Errorf("bind user: %v", err)
+		return nil, errors.Errorf("bind user %s: %v", entry.DN, err)
 	}
 
 	identifier := entry.GetAttributeValue(p.config.FieldMapping.Identifier)

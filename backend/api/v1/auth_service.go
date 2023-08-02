@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/bytebase/bytebase/backend/plugin/idp/ldap"
 	"net/mail"
 	"regexp"
 	"strings"
@@ -735,6 +736,16 @@ func (s *AuthService) getOrCreateUserWithIDP(ctx context.Context, request *v1pb.
 			return nil, status.Errorf(codes.Internal, "failed to get user info: %v", err)
 		}
 		fieldMapping = idp.Config.GetOidcConfig().FieldMapping
+	} else if idp.Type == storepb.IdentityProviderType_LDAP {
+		ldapIdentityProvider, err := ldap.NewIdentityProvider(idp.Config.GetLdapConfig())
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to create new LDAP identity provider: %v", err)
+		}
+		userInfo, err = ldapIdentityProvider.Authenticate(request.Email, request.Password)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to get user info: %s", err)
+		}
+		fieldMapping = idp.Config.GetLdapConfig().FieldMapping
 	} else {
 		return nil, status.Errorf(codes.InvalidArgument, "identity provider type %s not supported", idp.Type.String())
 	}

@@ -236,6 +236,7 @@
     - [GetIdentityProviderRequest](#bytebase-v1-GetIdentityProviderRequest)
     - [IdentityProvider](#bytebase-v1-IdentityProvider)
     - [IdentityProviderConfig](#bytebase-v1-IdentityProviderConfig)
+    - [LDAPIdentityProviderConfig](#bytebase-v1-LDAPIdentityProviderConfig)
     - [ListIdentityProvidersRequest](#bytebase-v1-ListIdentityProvidersRequest)
     - [ListIdentityProvidersResponse](#bytebase-v1-ListIdentityProvidersResponse)
     - [OAuth2IdentityProviderConfig](#bytebase-v1-OAuth2IdentityProviderConfig)
@@ -248,6 +249,7 @@
   
     - [IdentityProviderType](#bytebase-v1-IdentityProviderType)
     - [OAuth2AuthStyle](#bytebase-v1-OAuth2AuthStyle)
+    - [SecurityProtocol](#bytebase-v1-SecurityProtocol)
   
     - [IdentityProviderService](#bytebase-v1-IdentityProviderService)
   
@@ -4040,6 +4042,30 @@ reference: https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get
 | ----- | ---- | ----- | ----------- |
 | oauth2_config | [OAuth2IdentityProviderConfig](#bytebase-v1-OAuth2IdentityProviderConfig) |  |  |
 | oidc_config | [OIDCIdentityProviderConfig](#bytebase-v1-OIDCIdentityProviderConfig) |  |  |
+| ldap_config | [LDAPIdentityProviderConfig](#bytebase-v1-LDAPIdentityProviderConfig) |  |  |
+
+
+
+
+
+
+<a name="bytebase-v1-LDAPIdentityProviderConfig"></a>
+
+### LDAPIdentityProviderConfig
+LDAPIdentityProviderConfig is the structure for LDAP identity provider config.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| host | [string](#string) |  |  |
+| port | [int64](#int64) |  |  |
+| bind_dn | [string](#string) |  |  |
+| bind_password | [string](#string) |  |  |
+| base_dn | [string](#string) |  |  |
+| user_filter | [string](#string) |  |  |
+| security_protocol | [SecurityProtocol](#bytebase-v1-SecurityProtocol) |  |  |
+| field_mapping | [FieldMapping](#bytebase-v1-FieldMapping) |  |  |
+| skip_tls_verify | [bool](#bool) |  |  |
 
 
 
@@ -4211,6 +4237,7 @@ The identity provider&#39;s `name` field is used to identify the identity provid
 | IDENTITY_PROVIDER_TYPE_UNSPECIFIED | 0 |  |
 | OAUTH2 | 1 |  |
 | OIDC | 2 |  |
+| LDAP | 3 |  |
 
 
 
@@ -4224,6 +4251,20 @@ The identity provider&#39;s `name` field is used to identify the identity provid
 | OAUTH2_AUTH_STYLE_UNSPECIFIED | 0 |  |
 | IN_PARAMS | 1 | IN_PARAMS sends the &#34;client_id&#34; and &#34;client_secret&#34; in the POST body as application/x-www-form-urlencoded parameters. |
 | IN_HEADER | 2 | IN_HEADER sends the client_id and client_password using HTTP Basic Authorization. This is an optional style described in the OAuth2 RFC 6749 section 2.3.1. |
+
+
+
+<a name="bytebase-v1-SecurityProtocol"></a>
+
+### SecurityProtocol
+SecurityProtocol represents the security protocol to be used when connecting
+to the LDAP server.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| Unspecified | 0 |  |
+| StartTLS | 1 | SecurityProtocolStartTLS represents the StartTLS security protocol. |
+| LDAPS | 2 | SecurityProtocolLDAPS represents the LDAPS security protocol. |
 
 
  

@@ -163,12 +163,14 @@ enum IdentityProviderType {
   IDENTITY_PROVIDER_TYPE_UNSPECIFIED = 0;
   OAUTH2 = 1;
   OIDC = 2;
+  LDAP = 3;
 }
 
 message IdentityProviderConfig {
   oneof config {
     OAuth2IdentityProviderConfig oauth2_config = 1;
     OIDCIdentityProviderConfig oidc_config = 2;
+    LDAPIdentityProviderConfig ldap_config = 3;
   }
 }
 
@@ -208,6 +210,37 @@ message OIDCIdentityProviderConfig {
   bool skip_tls_verify = 6;
 
   OAuth2AuthStyle auth_style = 7;
+}
+
+// SecurityProtocol represents the security protocol to be used when connecting
+// to the LDAP server.
+enum SecurityProtocol {
+  Unspecified = 0;
+  // SecurityProtocolStartTLS represents the StartTLS security protocol.
+  StartTLS = 1;
+  // SecurityProtocolLDAPS represents the LDAPS security protocol.
+  LDAPS = 2;
+}
+
+// LDAPIdentityProviderConfig is the structure for LDAP identity provider config.
+message LDAPIdentityProviderConfig {
+  string host = 1;
+
+  int64 port = 2;
+
+  string bind_dn = 3;
+
+  string bind_password = 4;
+
+  string base_dn = 5;
+
+  string user_filter = 6;
+
+  SecurityProtocol security_protocol = 7;
+
+  FieldMapping field_mapping = 8;
+
+  bool skip_tls_verify = 9;
 }
 
 // FieldMapping saves the field names from user info API of identity provider.

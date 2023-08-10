@@ -26,18 +26,18 @@ func TestMain(m *testing.M) {
 func TestNewIdentityProvider(t *testing.T) {
 	tests := []struct {
 		name        string
-		config      IdentityProviderConfig
+		config      storepb.LDAPIdentityProviderConfig
 		containsErr string
 	}{
 		{
 			name: "no security protocol",
-			config: IdentityProviderConfig{
+			config: storepb.LDAPIdentityProviderConfig{
 				Host:             "ldap.example.com",
-				BindDN:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BindDn:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				BindPassword:     "pa$$word",
-				BaseDN:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BaseDn:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				UserFilter:       "(&(objectClass=posixAccount)(uid=%s))",
-				SecurityProtocol: "",
+				SecurityProtocol: storepb.SecurityProtocol_Unspecified,
 				FieldMapping: &storepb.FieldMapping{
 					Identifier: "uid",
 				},
@@ -46,13 +46,13 @@ func TestNewIdentityProvider(t *testing.T) {
 		},
 		{
 			name: "no host",
-			config: IdentityProviderConfig{
+			config: storepb.LDAPIdentityProviderConfig{
 				Host:             "",
-				BindDN:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BindDn:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				BindPassword:     "pa$$word",
-				BaseDN:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BaseDn:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				UserFilter:       "(&(objectClass=posixAccount)(uid=%s))",
-				SecurityProtocol: SecurityProtocolStartTLS,
+				SecurityProtocol: storepb.SecurityProtocol_StartTLS,
 				FieldMapping: &storepb.FieldMapping{
 					Identifier: "uid",
 				},
@@ -61,13 +61,13 @@ func TestNewIdentityProvider(t *testing.T) {
 		},
 		{
 			name: "no bindDn",
-			config: IdentityProviderConfig{
+			config: storepb.LDAPIdentityProviderConfig{
 				Host:             "ldap.example.com",
-				BindDN:           "",
+				BindDn:           "",
 				BindPassword:     "pa$$word",
-				BaseDN:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BaseDn:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				UserFilter:       "(&(objectClass=posixAccount)(uid=%s))",
-				SecurityProtocol: SecurityProtocolStartTLS,
+				SecurityProtocol: storepb.SecurityProtocol_StartTLS,
 				FieldMapping: &storepb.FieldMapping{
 					Identifier: "uid",
 				},
@@ -76,13 +76,13 @@ func TestNewIdentityProvider(t *testing.T) {
 		},
 		{
 			name: "no bindPassword",
-			config: IdentityProviderConfig{
+			config: storepb.LDAPIdentityProviderConfig{
 				Host:             "ldap.example.com",
-				BindDN:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BindDn:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				BindPassword:     "",
-				BaseDN:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BaseDn:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				UserFilter:       "(&(objectClass=posixAccount)(uid=%s))",
-				SecurityProtocol: SecurityProtocolStartTLS,
+				SecurityProtocol: storepb.SecurityProtocol_StartTLS,
 				FieldMapping: &storepb.FieldMapping{
 					Identifier: "uid",
 				},
@@ -91,13 +91,13 @@ func TestNewIdentityProvider(t *testing.T) {
 		},
 		{
 			name: "no baseDn",
-			config: IdentityProviderConfig{
+			config: storepb.LDAPIdentityProviderConfig{
 				Host:             "ldap.example.com",
-				BindDN:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BindDn:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				BindPassword:     "pa$$word",
-				BaseDN:           "",
+				BaseDn:           "",
 				UserFilter:       "(&(objectClass=posixAccount)(uid=%s))",
-				SecurityProtocol: SecurityProtocolStartTLS,
+				SecurityProtocol: storepb.SecurityProtocol_StartTLS,
 				FieldMapping: &storepb.FieldMapping{
 					Identifier: "uid",
 				},
@@ -106,13 +106,13 @@ func TestNewIdentityProvider(t *testing.T) {
 		},
 		{
 			name: "no userFilter",
-			config: IdentityProviderConfig{
+			config: storepb.LDAPIdentityProviderConfig{
 				Host:             "ldap.example.com",
-				BindDN:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BindDn:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				BindPassword:     "pa$$word",
-				BaseDN:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BaseDn:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				UserFilter:       "",
-				SecurityProtocol: SecurityProtocolStartTLS,
+				SecurityProtocol: storepb.SecurityProtocol_StartTLS,
 				FieldMapping: &storepb.FieldMapping{
 					Identifier: "uid",
 				},
@@ -121,13 +121,13 @@ func TestNewIdentityProvider(t *testing.T) {
 		},
 		{
 			name: "no fieldMapping.identifier",
-			config: IdentityProviderConfig{
+			config: storepb.LDAPIdentityProviderConfig{
 				Host:             "ldap.example.com",
-				BindDN:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BindDn:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				BindPassword:     "pa$$word",
-				BaseDN:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+				BaseDn:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 				UserFilter:       "(&(objectClass=posixAccount)(uid=%s))",
-				SecurityProtocol: SecurityProtocolStartTLS,
+				SecurityProtocol: storepb.SecurityProtocol_StartTLS,
 				FieldMapping: &storepb.FieldMapping{
 					DisplayName: "displayName",
 				},
@@ -137,13 +137,13 @@ func TestNewIdentityProvider(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			_, err := NewIdentityProvider(test.config)
+			_, err := NewIdentityProvider(&test.config)
 			assert.ErrorContains(t, err, test.containsErr)
 		})
 	}
 }
 
-func newMockServer(t *testing.T, uid, displayName, mail string) (host string, port int) {
+func newMockServer(t *testing.T, uid, displayName, mail string) (host string, port int64) {
 	// localhostCert is a PEM-encoded TLS cert with SAN IPs
 	// "127.0.0.1" and "[::1]", expiring at Jan 29 16:00:00 2084 GMT.
 	// generated from src/crypto/tls:
@@ -244,15 +244,15 @@ func TestIdentityProvider(t *testing.T) {
 	)
 	host, port := newMockServer(t, testUID, testDisplayName, testMail)
 	ldap, err := NewIdentityProvider(
-		IdentityProviderConfig{
+		&storepb.LDAPIdentityProviderConfig{
 			Host:             host,
 			Port:             port,
-			SkipTLSVerify:    true,
-			BindDN:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+			SkipTlsVerify:    true,
+			BindDn:           "uid=system,ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 			BindPassword:     "pa$$word",
-			BaseDN:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
+			BaseDn:           "ou=Users,o=6456a5e9c25dabb51ccad385,dc=example,dc=com",
 			UserFilter:       "(&(objectClass=posixAccount)(uid=%s))",
-			SecurityProtocol: SecurityProtocolLDAPS,
+			SecurityProtocol: storepb.SecurityProtocol_LDAPS,
 			FieldMapping: &storepb.FieldMapping{
 				Identifier:  "uid",
 				DisplayName: "displayName",

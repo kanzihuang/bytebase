@@ -61,11 +61,13 @@
     - [FieldMapping](#bytebase-store-FieldMapping)
     - [IdentityProviderConfig](#bytebase-store-IdentityProviderConfig)
     - [IdentityProviderUserInfo](#bytebase-store-IdentityProviderUserInfo)
+    - [LDAPIdentityProviderConfig](#bytebase-store-LDAPIdentityProviderConfig)
     - [OAuth2IdentityProviderConfig](#bytebase-store-OAuth2IdentityProviderConfig)
     - [OIDCIdentityProviderConfig](#bytebase-store-OIDCIdentityProviderConfig)
   
     - [IdentityProviderType](#bytebase-store-IdentityProviderType)
     - [OAuth2AuthStyle](#bytebase-store-OAuth2AuthStyle)
+    - [SecurityProtocol](#bytebase-store-SecurityProtocol)
   
 - [store/instance.proto](#store_instance-proto)
     - [InstanceMetadata](#bytebase-store-InstanceMetadata)
@@ -981,6 +983,7 @@ reference: https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get
 | ----- | ---- | ----- | ----------- |
 | oauth2_config | [OAuth2IdentityProviderConfig](#bytebase-store-OAuth2IdentityProviderConfig) |  |  |
 | oidc_config | [OIDCIdentityProviderConfig](#bytebase-store-OIDCIdentityProviderConfig) |  |  |
+| ldap_config | [LDAPIdentityProviderConfig](#bytebase-store-LDAPIdentityProviderConfig) |  |  |
 
 
 
@@ -998,6 +1001,29 @@ reference: https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get
 | identifier | [string](#string) |  | Identifier is the value of the unique identifier in 3rd-party idp user info. |
 | display_name | [string](#string) |  | DisplayName is the value of display name in 3rd-party idp user info. |
 | email | [string](#string) |  | Email is the value of primary email in 3rd-party idp user info. |
+
+
+
+
+
+
+<a name="bytebase-store-LDAPIdentityProviderConfig"></a>
+
+### LDAPIdentityProviderConfig
+LDAPIdentityProviderConfig is the structure for LDAP identity provider config.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| host | [string](#string) |  |  |
+| port | [int64](#int64) |  |  |
+| bind_dn | [string](#string) |  |  |
+| bind_password | [string](#string) |  |  |
+| base_dn | [string](#string) |  |  |
+| user_filter | [string](#string) |  |  |
+| security_protocol | [SecurityProtocol](#bytebase-store-SecurityProtocol) |  |  |
+| field_mapping | [FieldMapping](#bytebase-store-FieldMapping) |  |  |
+| skip_tls_verify | [bool](#bool) |  |  |
 
 
 
@@ -1059,6 +1085,7 @@ OIDCIdentityProviderConfig is the structure for OIDC identity provider config.
 | IDENTITY_PROVIDER_TYPE_UNSPECIFIED | 0 |  |
 | OAUTH2 | 1 |  |
 | OIDC | 2 |  |
+| LDAP | 3 |  |
 
 
 
@@ -1072,6 +1099,20 @@ OIDCIdentityProviderConfig is the structure for OIDC identity provider config.
 | OAUTH2_AUTH_STYLE_UNSPECIFIED | 0 |  |
 | IN_PARAMS | 1 | IN_PARAMS sends the &#34;client_id&#34; and &#34;client_secret&#34; in the POST body as application/x-www-form-urlencoded parameters. |
 | IN_HEADER | 2 | IN_HEADER sends the client_id and client_password using HTTP Basic Authorization. This is an optional style described in the OAuth2 RFC 6749 section 2.3.1. |
+
+
+
+<a name="bytebase-store-SecurityProtocol"></a>
+
+### SecurityProtocol
+SecurityProtocol represents the security protocol to be used when connecting
+to the LDAP server.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| Unspecified | 0 |  |
+| StartTLS | 1 | SecurityProtocolStartTLS represents the StartTLS security protocol. |
+| LDAPS | 2 | SecurityProtocolLDAPS represents the LDAPS security protocol. |
 
 
  
